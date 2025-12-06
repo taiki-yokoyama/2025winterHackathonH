@@ -1,0 +1,42 @@
+services:
+
+  app:
+    build: ./docker/php
+    volumes:
+      - ./api/web:/work/web
+    ports:
+      - "8000:8000"
+
+  web:
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./api/web:/work/web
+    depends_on:
+      - app
+
+  postgresql:
+      image: postgres:14.7
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: password
+        POSTGRES_USER: posse
+        POSTGRES_DB: winter
+      volumes:
+        - ./docker/postgresql/initdb.d:/docker-entrypoint-initdb.d
+      ports:
+        - 5433:5432
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=0
+      - PMA_HOSTS=postgresql
+      - PMA_USER=posse
+      - PMA_PASSWORD=password
+    links:
+      - postgresql
+    ports:
+      - 1234:1234
