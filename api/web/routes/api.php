@@ -2,8 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\BooksSearchController;
-use App\Http\Controllers\YoutubeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,11 +14,4 @@ use App\Http\Controllers\YoutubeController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::get('/search', [BooksSearchController::class, 'search']);
-
-Route::get('/youtube/search', [YoutubeController::class, 'search']);
-Route::get('/youtube/trending', [YoutubeController::class, 'trending']);
+// ここに新しいAPIルートを追加してください

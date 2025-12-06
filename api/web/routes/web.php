@@ -13,8 +13,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('youtube/channels/{id}/titles', [YoutubeController::class, 'getListByChannelId']);
+// ここに新しいWebルートを追加してください
