@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>認証APIテスト</title>
+</head>
+<body>
+    <h1>認証APIテスト</h1>
+    
+    <h2>1. API接続テスト</h2>
+    <button onclick="testAPI()">APIテスト</button>
+    <pre id="apiResult"></pre>
+    
+    <h2>2. 新規登録テスト</h2>
+    <input type="text" id="testName" placeholder="名前" value="テストユーザー">
+    <input type="email" id="testEmail" placeholder="メール" value="test@example.com">
+    <input type="password" id="testPassword" placeholder="パスワード" value="password123">
+    <button onclick="testRegister()">登録テスト</button>
+    <pre id="registerResult"></pre>
+    
+    <h2>3. ログインテスト</h2>
+    <input type="email" id="loginEmail" placeholder="メール" value="yamada@example.com">
+    <input type="password" id="loginPassword" placeholder="パスワード" value="password123">
+    <button onclick="testLogin()">ログインテスト</button>
+    <pre id="loginResult"></pre>
+
+    <script>
+        async function testAPI() {
+            console.log('API接続テスト開始');
+            try {
+                const response = await fetch('/auth-api.php');
+                const data = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+                console.log('API接続成功:', data);
+            } catch (error) {
+                document.getElementById('apiResult').textContent = 'エラー: ' + error.message;
+                console.error('API接続エラー:', error);
+            }
+        }
+
+        async function testRegister() {
+            console.log('新規登録テスト開始');
+            const data = {
+                name: document.getElementById('testName').value,
+                email: document.getElementById('testEmail').value,
+                password: document.getElementById('testPassword').value,
+                password_confirmation: document.getElementById('testPassword').value
+            };
+            
+            console.log('送信データ:', data);
+            
+            try {
+                const response = await fetch('/auth-api.php/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('ステータス:', response.status);
+                const result = await response.json();
+                document.getElementById('registerResult').textContent = JSON.stringify(result, null, 2);
+                console.log('登録結果:', result);
+            } catch (error) {
+                document.getElementById('registerResult').textContent = 'エラー: ' + error.message;
+                console.error('登録エラー:', error);
+            }
+        }
+
+        async function testLogin() {
+            console.log('ログインテスト開始');
+            const data = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            console.log('送信データ:', data);
+            
+            try {
+                const response = await fetch('/auth-api.php/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('ステータス:', response.status);
+                const result = await response.json();
+                document.getElementById('loginResult').textContent = JSON.stringify(result, null, 2);
+                console.log('ログイン結果:', result);
+            } catch (error) {
+                document.getElementById('loginResult').textContent = 'エラー: ' + error.message;
+                console.error('ログインエラー:', error);
+            }
+        }
+    </script>
+</body>
+</html>

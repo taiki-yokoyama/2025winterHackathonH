@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フィードバック</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #4a90e2;
+            min-height: 100vh;
+            display: flex;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a5f;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-user {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #f5f7ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-right: 4px solid #764ba2;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .container {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            max-width: calc(100% - 250px);
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .retrospective-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .retrospective-item {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .retrospective-item:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .retrospective-item.selected {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .retrospective-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .retrospective-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .retrospective-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .retrospective-ratings {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .feedback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .feedback-item.unread {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .feedback-sender {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .feedback-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .feedback-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .feedback-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .reaction-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .reaction-btn {
+            padding: 6px 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reaction-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .reaction-btn.active {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .reaction-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .reply-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .reply-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .reply-item {
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .reply-date {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .reply-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .reply-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .reply-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .reply-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f44336;
+            color: white;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .container {
+                margin-left: 200px;
+                max-width: calc(100% - 200px);
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar-header h2,
+            .sidebar-user,
+            .nav-item span {
+                display: none;
+            }
+
+            .container {
+                margin-left: 60px;
+                max-width: calc(100% - 60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- サイドバー -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <svg class="logo-image" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 外側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="95" fill="#1e3a5f"/>
+                    <!-- 白い縁 -->
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="white" stroke-width="3"/>
+                    <!-- 中間のターコイズブルーの円 -->
+                    <circle cx="100" cy="100" r="75" fill="#4db8a8"/>
+                    <!-- 内側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="55" fill="#1e3a5f"/>
+                    <!-- 点線の円 -->
+                    <circle cx="100" cy="100" r="45" fill="none" stroke="white" stroke-width="2" stroke-dasharray="3,5"/>
+                    
+                    <!-- 軌道上の人のアイコン（8人） -->
+                    <!-- 上 -->
+                    <g transform="translate(100, 25)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右上 -->
+                    <g transform="translate(153, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右 -->
+                    <g transform="translate(175, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右下 -->
+                    <g transform="translate(153, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 下 -->
+                    <g transform="translate(100, 175)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左下 -->
+                    <g transform="translate(47, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左 -->
+                    <g transform="translate(25, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左上 -->
+                    <g transform="translate(47, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    
+                    <!-- 中央のグラフアイコン -->
+                    <rect x="75" y="115" width="12" height="20" fill="white" rx="2"/>
+                    <rect x="94" y="105" width="12" height="30" fill="white" rx="2"/>
+                    <rect x="113" y="90" width="12" height="45" fill="white" rx="2"/>
+                    <!-- 上昇トレンドの矢印 -->
+                    <path d="M 70 95 L 100 80 L 130 70" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M 130 70 L 125 75 L 130 78 Z" fill="white"/>
+                </svg>
+                <div class="logo-text">ORBIT</div>
+            </div>
+            <div class="sidebar-user" id="sidebarUser">読み込み中...</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/index.html" class="nav-item">
+                <span>トップページ</span>
+            </a>
+            <a href="/dashboard.html" class="nav-item">
+                <span>タスク管理</span>
+            </a>
+            <a href="/retrospective.html" class="nav-item">
+                <span>個人振り返り</span>
+            </a>
+            <a href="/feedback.html" class="nav-item active">
+                <span>フィードバック</span>
+            </a>
+            <a href="/good-more-complete.html" class="nav-item">
+                <span>Good&More</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>フィードバック</h1>
+            <div class="user-info">
+                <span class="user-name" id="userName">読み込み中...</span>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- タブ -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('received')">
+                受信したフィードバック
+                <span class="badge" id="unreadBadge" style="display: none;">0</span>
+            </button>
+            <button class="tab" onclick="switchTab('sent')">送信したフィードバック</button>
+        </div>
+
+        <!-- 受信タブ -->
+        <div id="receivedTab" class="two-column">
+            <div class="card">
+                <div class="card-title">チームメンバーの振り返り</div>
+                <div class="retrospective-list" id="retrospectiveList">
+                    <div class="empty">読み込み中...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">受信したフィードバック</div>
+                <div class="feedback-list" id="receivedFeedbackList">
+                    <div class="empty">フィードバックがありません</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 送信タブ -->
+        <div id="sentTab" class="two-column" style="display: none;">
+            <div class="card">
+                <div class="card-title">チームメンバーの振り返り</div>
+                <div class="retrospective-list" id="retrospectiveListSent">
+                    <div class="empty">読み込み中...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">送信したフィードバック</div>
+                <div class="feedback-list" id="sentFeedbackList">
+                    <div class="empty">フィードバックがありません</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- フィードバック送信モーダル -->
+    <div class="modal" id="sendFeedbackModal">
+        <div class="modal-content">
+            <div class="modal-title">フィードバックを送信</div>
+            <form id="sendFeedbackForm" onsubmit="submitFeedback(event)">
+                <div class="form-group">
+                    <label>送信先</label>
+                    <input type="text" id="feedbackReceiverName" readonly style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;">
+                    <input type="hidden" id="feedbackReceiverId">
+                    <input type="hidden" id="feedbackRetrospectiveId">
+                </div>
+                <div class="form-group">
+                    <label>フィードバック内容 <span style="color: #f44336;">*</span></label>
+                    <textarea id="feedbackContent" maxlength="1000" oninput="updateCharCount('feedbackContent')" required></textarea>
+                    <div class="char-count"><span id="feedbackContent-count">0</span>/1000</div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeSendFeedbackModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">送信</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- フィードバック編集モーダル -->
+    <div class="modal" id="editFeedbackModal">
+        <div class="modal-content">
+            <div class="modal-title">フィードバックを編集</div>
+            <form id="editFeedbackForm" onsubmit="updateFeedback(event)">
+                <input type="hidden" id="editFeedbackId">
+                <div class="form-group">
+                    <label>フィードバック内容 <span style="color: #f44336;">*</span></label>
+                    <textarea id="editFeedbackContent" maxlength="1000" oninput="updateCharCount('editFeedbackContent')" required></textarea>
+                    <div class="char-count"><span id="editFeedbackContent-count">0</span>/1000</div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditFeedbackModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">更新</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let TEAM_ID = null;
+        let currentTab = 'received';
+        let retrospectives = [];
+        let receivedFeedbacks = [];
+        let sentFeedbacks = [];
+        let selectedRetrospective = null;
+
+        // ページ読み込み時
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            if (currentUser) {
+                await loadData();
+            }
+        });
+
+        // 現在のユーザー取得
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/auth-api.php/me');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    currentUser = data.data;
+                    document.getElementById('userName').textContent = currentUser.name + ' (チーム' + currentUser.team_name + ')';
+                    document.getElementById('sidebarUser').textContent = currentUser.name + ' (チーム' + currentUser.team_name + ')';
+                    
+                    const teamMap = {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8};
+                    TEAM_ID = teamMap[currentUser.team_name] || 1;
+                } else {
+                    window.location.href = '/auth.html';
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                window.location.href = '/auth.html';
+            }
+        }
+
+        // データ読み込み
+        async function loadData() {
+            await Promise.all([
+                loadRetrospectives(),
+                loadFeedbacks()
+            ]);
+        }
+
+        // チームの振り返り一覧取得
+        async function loadRetrospectives() {
+            try {
+                const response = await fetch(`/feedback-api.php/retrospectives?team_id=${TEAM_ID}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    retrospectives = data.data;
+                    renderRetrospectives();
+                }
+            } catch (error) {
+                console.error('Failed to load retrospectives:', error);
+                document.getElementById('retrospectiveList').innerHTML = '<div class="empty">振り返りの読み込みに失敗しました</div>';
+                document.getElementById('retrospectiveListSent').innerHTML = '<div class="empty">振り返りの読み込みに失敗しました</div>';
+            }
+        }
+
+        // フィードバック取得
+        async function loadFeedbacks() {
+            try {
+                // 受信フィードバック
+                const receivedResponse = await fetch(`/feedback-api.php/feedbacks?user_id=${currentUser.id}&type=received`);
+                const receivedData = await receivedResponse.json();
+                
+                if (receivedData.success) {
+                    receivedFeedbacks = receivedData.data;
+                    renderReceivedFeedbacks();
+                    updateUnreadBadge();
+                }
+
+                // 送信フィードバック
+                const sentResponse = await fetch(`/feedback-api.php/feedbacks?user_id=${currentUser.id}&type=sent`);
+                const sentData = await sentResponse.json();
+                
+                if (sentData.success) {
+                    sentFeedbacks = sentData.data;
+                    renderSentFeedbacks();
+                }
+            } catch (error) {
+                console.error('Failed to load feedbacks:', error);
+            }
+        }
+
+        // 振り返り一覧表示
+        function renderRetrospectives() {
+            const list1 = document.getElementById('retrospectiveList');
+            const list2 = document.getElementById('retrospectiveListSent');
+            
+            if (retrospectives.length === 0) {
+                const emptyHtml = '<div class="empty">振り返りがありません</div>';
+                list1.innerHTML = emptyHtml;
+                list2.innerHTML = emptyHtml;
+                return;
+            }
+
+            const html = retrospectives.map(retro => {
+                const isOwn = retro.user_id === currentUser.id;
+                return `
+                    <div class="retrospective-item ${selectedRetrospective && selectedRetrospective.id === retro.id ? 'selected' : ''}" 
+                         onclick="selectRetrospective(${retro.id}, ${isOwn})">
+                        <div class="retrospective-header">
+                            <span class="retrospective-name">${escapeHtml(retro.user_name)}</span>
+                            <span class="retrospective-date">${retro.week_start_date}</span>
+                        </div>
+                        <div class="retrospective-ratings">
+                            <span>要件: ${retro.requirements_rating}</span>
+                            <span>開発: ${retro.development_rating}</span>
+                            <span>プレゼン: ${retro.presentation_rating}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            list1.innerHTML = html;
+            list2.innerHTML = html;
+        }
+
+        // 振り返り選択
+        function selectRetrospective(retroId, isOwn) {
+            selectedRetrospective = retrospectives.find(r => r.id === retroId);
+            
+            if (!isOwn && currentTab === 'received') {
+                // 自分以外の振り返りを選択した場合、フィードバック送信モーダルを開く
+                openSendFeedbackModal(selectedRetrospective);
+            }
+            
+            renderRetrospectives();
+        }
+
+        // 受信フィードバック表示
+        function renderReceivedFeedbacks() {
+            const list = document.getElementById('receivedFeedbackList');
+            
+            if (receivedFeedbacks.length === 0) {
+                list.innerHTML = '<div class="empty">フィードバックがありません</div>';
+                return;
+            }
+
+            list.innerHTML = receivedFeedbacks.map(feedback => {
+                const reactions = feedback.reactions || [];
+                const thumbsUp = reactions.find(r => r.reaction_type === 'thumbs_up');
+                const thumbsDown = reactions.find(r => r.reaction_type === 'thumbs_down');
+                
+                return `
+                    <div class="feedback-item ${!feedback.is_read ? 'unread' : ''}" id="feedback-${feedback.id}">
+                        <div class="feedback-header">
+                            <span class="feedback-sender">${escapeHtml(feedback.sender_name)}</span>
+                            <span class="feedback-date">${formatDate(feedback.created_at)}</span>
+                        </div>
+                        <div class="feedback-content">${escapeHtml(feedback.content)}</div>
+                        <div class="feedback-actions">
+                            <div class="reaction-buttons">
+                                <button class="reaction-btn" onclick="toggleReaction(${feedback.id}, 'thumbs_up')">
+                                    <span class="reaction-count">${thumbsUp ? thumbsUp.count : 0}</span>
+                                </button>
+                                <button class="reaction-btn" onclick="toggleReaction(${feedback.id}, 'thumbs_down')">
+                                    <span class="reaction-count">${thumbsDown ? thumbsDown.count : 0}</span>
+                                </button>
+                            </div>
+                            ${!feedback.is_read ? `<button class="btn btn-secondary btn-small" onclick="markAsRead(${feedback.id})">既読にする</button>` : ''}
+                        </div>
+                        ${renderReplies(feedback)}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 送信フィードバック表示
+        function renderSentFeedbacks() {
+            const list = document.getElementById('sentFeedbackList');
+            
+            if (sentFeedbacks.length === 0) {
+                list.innerHTML = '<div class="empty">フィードバックがありません</div>';
+                return;
+            }
+
+            list.innerHTML = sentFeedbacks.map(feedback => {
+                const reactions = feedback.reactions || [];
+                const thumbsUp = reactions.find(r => r.reaction_type === 'thumbs_up');
+                const thumbsDown = reactions.find(r => r.reaction_type === 'thumbs_down');
+                
+                return `
+                    <div class="feedback-item" id="feedback-${feedback.id}">
+                        <div class="feedback-header">
+                            <span class="feedback-sender">宛先: ${escapeHtml(feedback.receiver_name)}</span>
+                            <span class="feedback-date">${formatDate(feedback.created_at)}</span>
+                        </div>
+                        <div class="feedback-content">${escapeHtml(feedback.content)}</div>
+                        <div class="feedback-actions">
+                            <div class="reaction-buttons">
+                                <button class="reaction-btn" onclick="toggleReaction(${feedback.id}, 'thumbs_up')">
+                                    <span class="reaction-count">${thumbsUp ? thumbsUp.count : 0}</span>
+                                </button>
+                                <button class="reaction-btn" onclick="toggleReaction(${feedback.id}, 'thumbs_down')">
+                                    <span class="reaction-count">${thumbsDown ? thumbsDown.count : 0}</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-secondary btn-small" onclick="openEditFeedbackModal(${feedback.id})">編集</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteFeedback(${feedback.id})">削除</button>
+                        </div>
+                        ${renderReplies(feedback)}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 返信セクション表示
+        function renderReplies(feedback) {
+            const replies = feedback.replies || [];
+            
+            let html = '<div class="reply-section">';
+            
+            if (replies.length > 0) {
+                html += '<div class="reply-list">';
+                replies.forEach(reply => {
+                    html += `
+                        <div class="reply-item">
+                            <div class="reply-header">
+                                <span class="reply-author">${escapeHtml(reply.user_name)}</span>
+                                <span class="reply-date">${formatDate(reply.created_at)}</span>
+                            </div>
+                            <div class="reply-content">${escapeHtml(reply.content)}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            html += `
+                <div class="reply-form">
+                    <textarea class="reply-input" placeholder="返信を入力..." id="reply-${feedback.id}" maxlength="1000"></textarea>
+                    <button class="btn btn-primary" onclick="submitReply(${feedback.id})">返信</button>
+                </div>
+            `;
+            
+            html += '</div>';
+            return html;
+        }
+
+        // タブ切り替え
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'received') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('receivedTab').style.display = 'grid';
+                document.getElementById('sentTab').style.display = 'none';
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('receivedTab').style.display = 'none';
+                document.getElementById('sentTab').style.display = 'grid';
+            }
+        }
+
+        // フィードバック送信モーダル
+        function openSendFeedbackModal(retrospective) {
+            document.getElementById('feedbackReceiverName').value = retrospective.user_name;
+            document.getElementById('feedbackReceiverId').value = retrospective.user_id;
+            document.getElementById('feedbackRetrospectiveId').value = retrospective.id;
+            document.getElementById('feedbackContent').value = '';
+            document.getElementById('feedbackContent-count').textContent = '0';
+            document.getElementById('sendFeedbackModal').classList.add('show');
+        }
+
+        function closeSendFeedbackModal() {
+            document.getElementById('sendFeedbackModal').classList.remove('show');
+            document.getElementById('sendFeedbackForm').reset();
+        }
+
+        // フィードバック送信
+        async function submitFeedback(event) {
+            event.preventDefault();
+
+            const data = {
+                retrospective_id: parseInt(document.getElementById('feedbackRetrospectiveId').value),
+                sender_id: currentUser.id,
+                receiver_id: parseInt(document.getElementById('feedbackReceiverId').value),
+                content: document.getElementById('feedbackContent').value
+            };
+
+            try {
+                const response = await fetch('/feedback-api.php/feedbacks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeSendFeedbackModal();
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || 'フィードバックの送信に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('フィードバックの送信に失敗しました');
+            }
+        }
+
+        // フィードバック編集モーダル
+        function openEditFeedbackModal(feedbackId) {
+            const feedback = sentFeedbacks.find(f => f.id === feedbackId);
+            if (!feedback) return;
+
+            document.getElementById('editFeedbackId').value = feedbackId;
+            document.getElementById('editFeedbackContent').value = feedback.content;
+            document.getElementById('editFeedbackContent-count').textContent = feedback.content.length;
+            document.getElementById('editFeedbackModal').classList.add('show');
+        }
+
+        function closeEditFeedbackModal() {
+            document.getElementById('editFeedbackModal').classList.remove('show');
+            document.getElementById('editFeedbackForm').reset();
+        }
+
+        // フィードバック更新
+        async function updateFeedback(event) {
+            event.preventDefault();
+
+            const data = {
+                id: parseInt(document.getElementById('editFeedbackId').value),
+                content: document.getElementById('editFeedbackContent').value
+            };
+
+            try {
+                const response = await fetch('/feedback-api.php/feedback', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeEditFeedbackModal();
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || 'フィードバックの更新に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('フィードバックの更新に失敗しました');
+            }
+        }
+
+        // フィードバック削除
+        async function deleteFeedback(feedbackId) {
+            if (!confirm('このフィードバックを削除しますか？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/feedback-api.php/feedback?id=${feedbackId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || 'フィードバックの削除に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('フィードバックの削除に失敗しました');
+            }
+        }
+
+        // 返信送信
+        async function submitReply(feedbackId) {
+            const content = document.getElementById(`reply-${feedbackId}`).value.trim();
+            
+            if (!content) {
+                alert('返信内容を入力してください');
+                return;
+            }
+
+            const data = {
+                feedback_id: feedbackId,
+                user_id: currentUser.id,
+                content: content
+            };
+
+            try {
+                const response = await fetch('/feedback-api.php/reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    document.getElementById(`reply-${feedbackId}`).value = '';
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || '返信の送信に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('返信の送信に失敗しました');
+            }
+        }
+
+        // リアクション切り替え
+        async function toggleReaction(feedbackId, reactionType) {
+            const data = {
+                feedback_id: feedbackId,
+                user_id: currentUser.id,
+                reaction_type: reactionType
+            };
+
+            try {
+                const response = await fetch('/feedback-api.php/reaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || 'リアクションの切り替えに失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('リアクションの切り替えに失敗しました');
+            }
+        }
+
+        // 既読マーク
+        async function markAsRead(feedbackId) {
+            const data = {
+                feedback_id: feedbackId
+            };
+
+            try {
+                const response = await fetch('/feedback-api.php/mark-read', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await loadFeedbacks();
+                } else {
+                    alert(result.message || '既読マークに失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('既読マークに失敗しました');
+            }
+        }
+
+        // 未読バッジ更新
+        function updateUnreadBadge() {
+            const unreadCount = receivedFeedbacks.filter(f => !f.is_read).length;
+            const badge = document.getElementById('unreadBadge');
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // 文字数カウント更新
+        function updateCharCount(id) {
+            const textarea = document.getElementById(id);
+            const count = document.getElementById(id + '-count');
+            count.textContent = textarea.value.length;
+        }
+
+        // 成功メッセージ表示
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // 日付フォーマット
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'たった今';
+            if (minutes < 60) return `${minutes}分前`;
+            if (hours < 24) return `${hours}時間前`;
+            if (days < 7) return `${days}日前`;
+            
+            return date.toLocaleDateString('ja-JP');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

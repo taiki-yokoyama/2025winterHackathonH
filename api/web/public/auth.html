@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン・新規登録</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: #f5f5f5;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .auth-content {
+            padding: 40px;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input.error {
+            border-color: #f44336;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .info-message {
+            background: #2196f3;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-message.show {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #f44336;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #ff9800;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #4caf50;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .auth-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchTab('login')">ログイン</div>
+            <div class="auth-tab" onclick="switchTab('register')">新規登録</div>
+        </div>
+
+        <div class="auth-content">
+            <!-- ログインフォーム -->
+            <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+                <h2 class="form-title">ログイン</h2>
+                
+                <div id="loginSuccess" class="success-message"></div>
+                <div id="loginError" class="error-message"></div>
+
+                <div class="form-group">
+                    <label>メールアドレス</label>
+                    <input type="email" id="loginEmail" required>
+                    <div class="error-message" id="loginEmailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <input type="password" id="loginPassword" required>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    ログイン
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" onclick="showForgotPassword(); return false;">パスワードを忘れた方</a>
+                </div>
+            </form>
+
+            <!-- 新規登録フォーム -->
+            <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                <h2 class="form-title">新規登録</h2>
+                
+                <div id="registerSuccess" class="success-message"></div>
+                <div id="registerInfo" class="info-message"></div>
+
+                <div class="form-group">
+                    <label>名前</label>
+                    <input type="text" id="registerName" required>
+                    <div class="error-message" id="registerNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>メールアドレス</label>
+                    <input type="email" id="registerEmail" required>
+                    <div class="error-message" id="registerEmailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>チーム</label>
+                    <select id="registerTeam" required style="width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                        <option value="">選択してください</option>
+                        <option value="A">チームA</option>
+                        <option value="B">チームB</option>
+                        <option value="C">チームC</option>
+                        <option value="D">チームD</option>
+                        <option value="E">チームE</option>
+                        <option value="F">チームF</option>
+                        <option value="G">チームG</option>
+                        <option value="H">チームH</option>
+                    </select>
+                    <div class="error-message" id="registerTeamNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>パスワード（8文字以上）</label>
+                    <input type="password" id="registerPassword" required oninput="checkPasswordStrength()">
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                    </div>
+                    <div class="error-message" id="registerPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>パスワード確認</label>
+                    <input type="password" id="registerPasswordConfirmation" required>
+                    <div class="error-message" id="registerPasswordConfirmationError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="registerBtn">
+                    登録する
+                </button>
+            </form>
+
+            <!-- パスワードリセットフォーム -->
+            <form id="forgotPasswordForm" class="auth-form" onsubmit="handleForgotPassword(event)">
+                <h2 class="form-title">パスワードリセット</h2>
+                
+                <div id="forgotSuccess" class="success-message"></div>
+
+                <div class="form-group">
+                    <label>メールアドレス</label>
+                    <input type="email" id="forgotEmail" required>
+                    <div class="error-message" id="forgotEmailError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="forgotBtn">
+                    リセットメールを送信
+                </button>
+
+                <button type="button" class="btn btn-secondary" onclick="switchTab('login')">
+                    ログインに戻る
+                </button>
+            </form>
+
+            <!-- パスワードリセット実行フォーム -->
+            <form id="resetPasswordForm" class="auth-form" onsubmit="handleResetPassword(event)">
+                <h2 class="form-title">新しいパスワード設定</h2>
+                
+                <div id="resetSuccess" class="success-message"></div>
+
+                <input type="hidden" id="resetToken">
+
+                <div class="form-group">
+                    <label>新しいパスワード（8文字以上）</label>
+                    <input type="password" id="resetPassword" required>
+                    <div class="error-message" id="resetPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>パスワード確認</label>
+                    <input type="password" id="resetPasswordConfirmation" required>
+                    <div class="error-message" id="resetPasswordConfirmationError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="resetBtn">
+                    パスワードをリセット
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // タブ切り替え
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else if (tab === 'register') {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+            
+            clearErrors();
+        }
+
+        // パスワードリセット画面表示
+        function showForgotPassword() {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('forgotPasswordForm').classList.add('active');
+            clearErrors();
+        }
+
+        // エラークリア
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(e => {
+                e.classList.remove('show');
+                e.textContent = '';
+            });
+            document.querySelectorAll('input').forEach(i => i.classList.remove('error'));
+            document.querySelectorAll('.success-message, .info-message').forEach(m => {
+                m.classList.remove('show');
+                m.textContent = '';
+            });
+        }
+
+        // エラー表示
+        function showError(field, message) {
+            const errorElement = document.getElementById(field + 'Error');
+            const inputElement = document.getElementById(field);
+            
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('show');
+            }
+            if (inputElement) {
+                inputElement.classList.add('error');
+            }
+        }
+
+        // パスワード強度チェック
+        function checkPasswordStrength() {
+            const password = document.getElementById('registerPassword').value;
+            const bar = document.getElementById('passwordStrengthBar');
+            
+            bar.className = 'password-strength-bar';
+            
+            if (password.length === 0) {
+                return;
+            }
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+            
+            if (strength <= 1) {
+                bar.classList.add('weak');
+            } else if (strength <= 3) {
+                bar.classList.add('medium');
+            } else {
+                bar.classList.add('strong');
+            }
+        }
+
+        // ログイン処理
+        async function handleLogin(event) {
+            event.preventDefault();
+            clearErrors();
+            
+            console.log('ログイン処理開始');
+            
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> ログイン中...';
+            
+            const data = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            console.log('送信データ:', data);
+            
+            try {
+                console.log('APIリクエスト送信: /auth-api.php/login');
+                const response = await fetch('/auth-api.php/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('レスポンスステータス:', response.status);
+                const result = await response.json();
+                console.log('レスポンス:', result);
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('loginSuccess');
+                    successMsg.textContent = result.message;
+                    successMsg.classList.add('show');
+                    
+                    // リダイレクト
+                    setTimeout(() => {
+                        window.location.href = result.redirect_url;
+                    }, 1000);
+                } else {
+                    if (result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            showError('login' + field.charAt(0).toUpperCase() + field.slice(1), result.errors[field]);
+                        });
+                    } else {
+                        const errorElement = document.getElementById('loginError');
+                        errorElement.textContent = result.message;
+                        errorElement.classList.add('show');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorElement = document.getElementById('loginError');
+                errorElement.textContent = 'ログインに失敗しました';
+                errorElement.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ログイン';
+            }
+        }
+
+        // 新規登録処理
+        async function handleRegister(event) {
+            event.preventDefault();
+            clearErrors();
+            
+            console.log('新規登録処理開始');
+            
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 登録中...';
+            
+            const data = {
+                name: document.getElementById('registerName').value,
+                email: document.getElementById('registerEmail').value,
+                team_name: document.getElementById('registerTeam').value,
+                password: document.getElementById('registerPassword').value,
+                password_confirmation: document.getElementById('registerPasswordConfirmation').value
+            };
+            
+            console.log('送信データ:', data);
+            
+            try {
+                console.log('APIリクエスト送信: /auth-api.php/register');
+                const response = await fetch('/auth-api.php/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('レスポンスステータス:', response.status);
+                const result = await response.json();
+                console.log('レスポンス:', result);
+                
+                if (result.success) {
+                    console.log('登録成功！');
+                    const successMsg = document.getElementById('registerSuccess');
+                    successMsg.textContent = result.message;
+                    successMsg.classList.add('show');
+                    
+                    // フォームリセット
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('passwordStrengthBar').className = 'password-strength-bar';
+                    
+                    console.log('2秒後にログイン画面に切り替えます...');
+                    
+                    // 2秒後にログイン画面に切り替え
+                    setTimeout(() => {
+                        console.log('ログイン画面に切り替え中...');
+                        switchTab('login');
+                        const loginSuccess = document.getElementById('loginSuccess');
+                        loginSuccess.textContent = '登録が完了しました。ログインしてください。';
+                        loginSuccess.classList.add('show');
+                        console.log('ログイン画面に切り替え完了');
+                    }, 2000);
+                } else {
+                    if (result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            showError('register' + field.charAt(0).toUpperCase() + field.slice(1).replace('_', ''), result.errors[field]);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('registerName', '登録に失敗しました');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登録する';
+            }
+        }
+
+        // パスワードリセット要求
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            clearErrors();
+            
+            const btn = document.getElementById('forgotBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 送信中...';
+            
+            const data = {
+                email: document.getElementById('forgotEmail').value
+            };
+            
+            try {
+                const response = await fetch('/auth-api.php/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('forgotSuccess');
+                    successMsg.textContent = result.message;
+                    successMsg.classList.add('show');
+                    
+                    document.getElementById('forgotPasswordForm').reset();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('forgotEmail', '送信に失敗しました');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'リセットメールを送信';
+            }
+        }
+
+        // パスワードリセット実行
+        async function handleResetPassword(event) {
+            event.preventDefault();
+            clearErrors();
+            
+            const btn = document.getElementById('resetBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> リセット中...';
+            
+            const data = {
+                token: document.getElementById('resetToken').value,
+                password: document.getElementById('resetPassword').value,
+                password_confirmation: document.getElementById('resetPasswordConfirmation').value
+            };
+            
+            try {
+                const response = await fetch('/auth-api.php/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const successMsg = document.getElementById('resetSuccess');
+                    successMsg.textContent = result.message + ' ログインページに移動します...';
+                    successMsg.classList.add('show');
+                    
+                    setTimeout(() => {
+                        switchTab('login');
+                    }, 2000);
+                } else {
+                    if (result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            showError('reset' + field.charAt(0).toUpperCase() + field.slice(1).replace('_', ''), result.errors[field]);
+                        });
+                    } else {
+                        showError('resetPassword', result.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('resetPassword', 'リセットに失敗しました');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'パスワードをリセット';
+            }
+        }
+
+        // メール確認
+        async function verifyEmail(token) {
+            try {
+                const response = await fetch('/auth-api.php/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    switchTab('login');
+                    const successMsg = document.getElementById('loginSuccess');
+                    successMsg.textContent = result.message + ' ログインしてください。';
+                    successMsg.classList.add('show');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('メール確認に失敗しました');
+            }
+        }
+
+        // URLパラメータチェック
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // メール確認トークン
+            const verifyToken = urlParams.get('verify');
+            if (verifyToken) {
+                verifyEmail(verifyToken);
+            }
+            
+            // パスワードリセットトークン
+            const resetToken = urlParams.get('reset');
+            if (resetToken) {
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                document.getElementById('resetPasswordForm').classList.add('active');
+                document.getElementById('resetToken').value = resetToken;
+            }
+        });
+    </script>
+</body>
+</html>

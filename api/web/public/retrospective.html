@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人振り返り</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #4a90e2;
+            min-height: 100vh;
+            display: flex;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a5f;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-user {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #f5f7ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-right: 4px solid #764ba2;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .container {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            max-width: calc(100% - 250px);
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .user-select {
+            margin-top: 15px;
+        }
+
+        .user-select select {
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .rating-group {
+            margin-bottom: 15px;
+        }
+
+        .rating-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .star {
+            font-size: 32px;
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .week-info {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .container {
+                margin-left: 200px;
+                max-width: calc(100% - 200px);
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar-header h2,
+            .sidebar-user,
+            .nav-item span {
+                display: none;
+            }
+
+            .container {
+                margin-left: 60px;
+                max-width: calc(100% - 60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- サイドバー -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <svg class="logo-image" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 外側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="95" fill="#1e3a5f"/>
+                    <!-- 白い縁 -->
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="white" stroke-width="3"/>
+                    <!-- 中間のターコイズブルーの円 -->
+                    <circle cx="100" cy="100" r="75" fill="#4db8a8"/>
+                    <!-- 内側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="55" fill="#1e3a5f"/>
+                    <!-- 点線の円 -->
+                    <circle cx="100" cy="100" r="45" fill="none" stroke="white" stroke-width="2" stroke-dasharray="3,5"/>
+                    
+                    <!-- 軌道上の人のアイコン（8人） -->
+                    <!-- 上 -->
+                    <g transform="translate(100, 25)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右上 -->
+                    <g transform="translate(153, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右 -->
+                    <g transform="translate(175, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右下 -->
+                    <g transform="translate(153, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 下 -->
+                    <g transform="translate(100, 175)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左下 -->
+                    <g transform="translate(47, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左 -->
+                    <g transform="translate(25, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左上 -->
+                    <g transform="translate(47, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    
+                    <!-- 中央のグラフアイコン -->
+                    <rect x="75" y="115" width="12" height="20" fill="white" rx="2"/>
+                    <rect x="94" y="105" width="12" height="30" fill="white" rx="2"/>
+                    <rect x="113" y="90" width="12" height="45" fill="white" rx="2"/>
+                    <!-- 上昇トレンドの矢印 -->
+                    <path d="M 70 95 L 100 80 L 130 70" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M 130 70 L 125 75 L 130 78 Z" fill="white"/>
+                </svg>
+                <div class="logo-text">ORBIT</div>
+            </div>
+            <div class="sidebar-user" id="sidebarUser">読み込み中...</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/index.html" class="nav-item">
+                <span>トップページ</span>
+            </a>
+            <a href="/dashboard.html" class="nav-item">
+                <span>タスク管理</span>
+            </a>
+            <a href="/retrospective.html" class="nav-item active">
+                <span>個人振り返り</span>
+            </a>
+            <a href="/feedback.html" class="nav-item">
+                <span>フィードバック</span>
+            </a>
+            <a href="/good-more-complete.html" class="nav-item">
+                <span>Good&More</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>個人振り返り</h1>
+            <div class="user-select">
+                <select id="userId" onchange="onUserChange()">
+                    <option value="">読み込み中...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="content">
+            <div class="empty">ユーザーを選択してください</div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+        let currentUser = null;
+
+        // ページ読み込み時にユーザー情報を取得
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadUsers();
+        });
+
+        // 現在のログインユーザーを取得
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/auth-api.php/me');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    currentUser = data.data;
+                    document.getElementById('sidebarUser').textContent = currentUser.name + ' (チーム' + currentUser.team_name + ')';
+                }
+            } catch (error) {
+                console.error('Failed to load current user:', error);
+            }
+        }
+
+        // ユーザー一覧を取得
+        async function loadUsers() {
+            try {
+                const response = await fetch('/auth-api.php/users');
+                const data = await response.json();
+                
+                const select = document.getElementById('userId');
+                select.innerHTML = '<option value="">ユーザーを選択</option>';
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    data.data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        
+                        // 現在のログインユーザーを自動選択
+                        if (currentUser && user.id === currentUser.id) {
+                            option.selected = true;
+                            currentUserId = user.id.toString();
+                        }
+                        
+                        select.appendChild(option);
+                    });
+                    
+                    // ログインユーザーが選択されていたら自動的にフォームを読み込む
+                    if (currentUserId) {
+                        loadRetrospectiveForm();
+                    }
+                } else {
+                    select.innerHTML = '<option value="">ユーザーが見つかりません</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                const select = document.getElementById('userId');
+                select.innerHTML = '<option value="">ユーザーの読み込みに失敗しました</option>';
+            }
+        }
+
+        // ユーザー変更
+        function onUserChange() {
+            currentUserId = document.getElementById('userId').value;
+            
+            if (currentUserId) {
+                loadRetrospectiveForm();
+            } else {
+                document.getElementById('content').innerHTML = '<div class="empty">ユーザーを選択してください</div>';
+            }
+        }
+
+        // 振り返りフォーム読み込み
+        async function loadRetrospectiveForm() {
+            document.getElementById('content').innerHTML = '<div class="empty">読み込み中...</div>';
+            renderForm();
+        }
+
+        // フォーム表示
+        function renderForm() {
+            const monday = getMonday();
+            const sunday = getSunday();
+
+            let html = `
+                <div class="card">
+                    <div class="success-message" id="successMessage"></div>
+                    <div class="error-message" id="errorMessage"></div>
+
+                    <div class="week-info">
+                        対象期間: ${monday} 〜 ${sunday}
+                    </div>
+
+                    <form id="retrospectiveForm" onsubmit="submitRetrospective(event)">
+                        <input type="hidden" id="weekStart" value="${monday}">
+                        <input type="hidden" id="weekEnd" value="${sunday}">
+
+                        <!-- 要件定義 -->
+                        <div class="form-section">
+                            <div class="section-title">要件定義</div>
+                            <div class="rating-group">
+                                <span class="rating-label">評価（1〜5）</span>
+                                <div class="rating-stars" id="requirements-rating">
+                                    ${renderStars('requirements')}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>理由 <span style="color: #f44336;">*</span></label>
+                                <textarea id="requirements-reason" maxlength="1000" oninput="updateCharCount('requirements-reason')"></textarea>
+                                <div class="char-count"><span id="requirements-reason-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <!-- 開発 -->
+                        <div class="form-section">
+                            <div class="section-title">開発</div>
+                            <div class="rating-group">
+                                <span class="rating-label">評価（1〜5）</span>
+                                <div class="rating-stars" id="development-rating">
+                                    ${renderStars('development')}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>理由 <span style="color: #f44336;">*</span></label>
+                                <textarea id="development-reason" maxlength="1000" oninput="updateCharCount('development-reason')"></textarea>
+                                <div class="char-count"><span id="development-reason-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <!-- プレゼン -->
+                        <div class="form-section">
+                            <div class="section-title">プレゼン</div>
+                            <div class="rating-group">
+                                <span class="rating-label">評価（1〜5）</span>
+                                <div class="rating-stars" id="presentation-rating">
+                                    ${renderStars('presentation')}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>理由 <span style="color: #f44336;">*</span></label>
+                                <textarea id="presentation-reason" maxlength="1000" oninput="updateCharCount('presentation-reason')"></textarea>
+                                <div class="char-count"><span id="presentation-reason-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <!-- 振り返り -->
+                        <div class="form-section">
+                            <div class="section-title">振り返り</div>
+                            <div class="rating-group">
+                                <span class="rating-label">評価（1〜5）</span>
+                                <div class="rating-stars" id="retrospective-rating">
+                                    ${renderStars('retrospective')}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>理由 <span style="color: #f44336;">*</span></label>
+                                <textarea id="retrospective-reason" maxlength="1000" oninput="updateCharCount('retrospective-reason')"></textarea>
+                                <div class="char-count"><span id="retrospective-reason-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <!-- その他 -->
+                        <div class="form-section">
+                            <div class="section-title">その他</div>
+                            <div class="rating-group">
+                                <span class="rating-label">評価（1〜5）</span>
+                                <div class="rating-stars" id="other-rating">
+                                    ${renderStars('other')}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>理由 <span style="color: #f44336;">*</span></label>
+                                <textarea id="other-reason" maxlength="1000" oninput="updateCharCount('other-reason')"></textarea>
+                                <div class="char-count"><span id="other-reason-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <!-- 今後の展望 -->
+                        <div class="form-section">
+                            <div class="section-title">今後の展望</div>
+                            <div class="form-group">
+                                <label>次週の目標 <span style="color: #f44336;">*</span></label>
+                                <textarea id="future-outlook" maxlength="1000" oninput="updateCharCount('future-outlook')"></textarea>
+                                <div class="char-count"><span id="future-outlook-count">0</span>/1000</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            振り返りを提出
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+            initializeStarRatings();
+        }
+
+        // 星評価レンダリング
+        function renderStars(aspect) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += `<span class="star" data-aspect="${aspect}" data-rating="${i}" onclick="setRating('${aspect}', ${i})">★</span>`;
+            }
+            return html;
+        }
+
+
+
+        // 星評価初期化
+        function initializeStarRatings() {
+            // 各観点の評価を保存する変数
+            window.ratings = {
+                requirements: 0,
+                development: 0,
+                presentation: 0,
+                retrospective: 0,
+                other: 0
+            };
+        }
+
+        // 評価設定
+        function setRating(aspect, rating) {
+            window.ratings[aspect] = rating;
+            
+            const stars = document.querySelectorAll(`[data-aspect="${aspect}"]`);
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+
+
+        // 文字数カウント更新
+        function updateCharCount(id) {
+            const textarea = document.getElementById(id);
+            const count = document.getElementById(id + '-count');
+            count.textContent = textarea.value.length;
+        }
+
+        // 今週の月曜日取得
+        function getMonday() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(today.setDate(diff));
+            return monday.toISOString().split('T')[0];
+        }
+
+        // 今週の日曜日取得
+        function getSunday() {
+            const monday = new Date(getMonday());
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            return sunday.toISOString().split('T')[0];
+        }
+
+        // 振り返り提出
+        async function submitRetrospective(event) {
+            event.preventDefault();
+
+            // バリデーション
+            const errors = [];
+
+            // 評価チェック
+            const aspects = ['requirements', 'development', 'presentation', 'retrospective', 'other'];
+            for (const aspect of aspects) {
+                if (!window.ratings[aspect] || window.ratings[aspect] === 0) {
+                    errors.push(`${aspect}の評価を選択してください`);
+                }
+
+                const reason = document.getElementById(`${aspect}-reason`).value.trim();
+                if (!reason) {
+                    errors.push(`${aspect}の理由を入力してください`);
+                }
+            }
+
+            // 展望チェック
+            const outlook = document.getElementById('future-outlook').value.trim();
+            if (!outlook) {
+                errors.push('今後の展望を入力してください');
+            }
+
+            if (errors.length > 0) {
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.textContent = errors.join('\n');
+                errorMsg.classList.add('show');
+                window.scrollTo(0, 0);
+                return;
+            }
+
+            // 確認ダイアログ
+            if (!confirm('振り返りを提出しますか？')) {
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '送信中...';
+
+            const data = {
+                user_id: parseInt(currentUserId),
+                week_start_date: document.getElementById('weekStart').value,
+                week_end_date: document.getElementById('weekEnd').value,
+                requirements_rating: window.ratings.requirements,
+                requirements_reason: document.getElementById('requirements-reason').value,
+                development_rating: window.ratings.development,
+                development_reason: document.getElementById('development-reason').value,
+                presentation_rating: window.ratings.presentation,
+                presentation_reason: document.getElementById('presentation-reason').value,
+                retrospective_rating: window.ratings.retrospective,
+                retrospective_reason: document.getElementById('retrospective-reason').value,
+                other_rating: window.ratings.other,
+                other_reason: document.getElementById('other-reason').value,
+                future_outlook: outlook,
+                task_ids: []
+            };
+
+            try {
+                const response = await fetch('/retrospective-api.php/retrospectives', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const successMsg = document.getElementById('successMessage');
+                    successMsg.textContent = result.message;
+                    successMsg.classList.add('show');
+                    
+                    // フォームリセット
+                    document.getElementById('retrospectiveForm').reset();
+                    window.ratings = {
+                        requirements: 0,
+                        development: 0,
+                        presentation: 0,
+                        retrospective: 0,
+                        other: 0
+                    };
+                    
+                    window.scrollTo(0, 0);
+                } else {
+                    const errorMsg = document.getElementById('errorMessage');
+                    if (result.errors) {
+                        errorMsg.textContent = Object.values(result.errors).join('\n');
+                    } else {
+                        errorMsg.textContent = result.message;
+                    }
+                    errorMsg.classList.add('show');
+                    window.scrollTo(0, 0);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.textContent = '送信に失敗しました';
+                errorMsg.classList.add('show');
+                window.scrollTo(0, 0);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '振り返りを提出';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
