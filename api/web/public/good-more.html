@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Good&More - 送信履歴</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .user-select {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-select label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .user-select select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            color: #999;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .person-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-sent {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-read {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .status-reacted {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .message-section {
+            margin-bottom: 15px;
+        }
+
+        .message-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .message-content {
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .good-section {
+            background: #fff3e0;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .more-section {
+            background: #e1f5fe;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .history-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .reaction-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reaction-count {
+            background: #f5f5f5;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .history-item {
+                padding: 15px;
+            }
+
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Good&More 履歴</h1>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('sent')">送信履歴</button>
+            <button class="tab" onclick="switchTab('received')">受信履歴</button>
+        </div>
+
+        <div class="user-select">
+            <label for="userId">ユーザーを選択:</label>
+            <select id="userId" onchange="loadHistory()">
+                <option value="">選択してください</option>
+                <option value="1">山田太郎</option>
+                <option value="2">佐藤花子</option>
+                <option value="3">鈴木一郎</option>
+            </select>
+        </div>
+
+        <div id="content">
+            <div class="empty">ユーザーを選択してください</div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'sent';
+        let currentPage = 1;
+        let currentUserId = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            currentPage = 1;
+            
+            // タブのアクティブ状態を更新
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                document.getElementById('content').innerHTML = '<div class="empty">ユーザーを選択してください</div>';
+                return;
+            }
+
+            currentUserId = userId;
+            document.getElementById('content').innerHTML = '<div class="loading">読み込み中...</div>';
+
+            const endpoint = currentTab === 'sent' ? 'sent' : 'received';
+            const param = currentTab === 'sent' ? 'sender_id' : 'receiver_id';
+            const url = `/good-more-api.php/${endpoint}?${param}=${userId}&page=${currentPage}&per_page=10`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderHistory(data.data, data.pagination);
+                    } else {
+                        document.getElementById('content').innerHTML = `<div class="empty">エラー: ${data.message}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('content').innerHTML = '<div class="empty">データの取得に失敗しました</div>';
+                });
+        }
+
+        function renderHistory(items, pagination) {
+            if (items.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="empty">履歴がありません</div>';
+                return;
+            }
+
+            const statusLabels = {
+                'sent': '送信済み',
+                'read': '既読',
+                'reacted': 'リアクション済み'
+            };
+
+            let html = '<div class="history-list">';
+            
+            items.forEach(item => {
+                const personName = currentTab === 'sent' ? item.receiver_name : item.sender_name;
+                const personLabel = currentTab === 'sent' ? '宛先' : '送信者';
+                const date = new Date(item.created_at).toLocaleString('ja-JP');
+
+                html += `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="person-name">${personLabel}: ${personName}</span>
+                            <span class="status status-${item.status}">${statusLabels[item.status]}</span>
+                        </div>
+                        
+                        <div class="good-section message-section">
+                            <span class="message-label">👍 Good</span>
+                            <div class="message-content">${escapeHtml(item.good_message)}</div>
+                        </div>
+                        
+                        <div class="more-section message-section">
+                            <span class="message-label">💡 More</span>
+                            <div class="message-content">${escapeHtml(item.more_message)}</div>
+                        </div>
+                        
+                        <div class="history-footer">
+                            <span>${date}</span>
+                            ${item.reaction_count > 0 ? `
+                                <div class="reaction-info">
+                                    <span class="reaction-count">❤️ ${item.reaction_count}件のリアクション</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+
+            // ページネーション
+            if (pagination.last_page > 1) {
+                html += `
+                    <div class="pagination">
+                        <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                            ← 前へ
+                        </button>
+                        <span class="page-info">${currentPage} / ${pagination.last_page}</span>
+                        <button onclick="changePage(${currentPage + 1})" ${currentPage === pagination.last_page ? 'disabled' : ''}>
+                            次へ →
+                        </button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadHistory();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

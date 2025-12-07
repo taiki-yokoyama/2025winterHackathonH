@@ -1,0 +1,181 @@
+/* Good&More送信履歴スタイル */
+
+.good-more-sent-history {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.good-more-sent-history h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.history-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+}
+
+.history-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.receiver-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-sent {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-read {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.status-reacted {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.history-content {
+  margin-bottom: 12px;
+}
+
+.good-section,
+.more-section {
+  margin-bottom: 12px;
+}
+
+.good-section h4,
+.more-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.good-section p,
+.more-section p {
+  color: #333;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.date {
+  font-size: 12px;
+  color: #999;
+}
+
+.reactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reaction-count {
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #666;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .good-more-sent-history {
+    padding: 12px;
+  }
+
+  .history-item {
+    padding: 12px;
+  }
+
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

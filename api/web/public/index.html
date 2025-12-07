@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トップページ - チーム振り返りシステム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #4a90e2;
+            min-height: 100vh;
+            display: flex;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a5f;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-user {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #f5f7ff;
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-right: 4px solid #764ba2;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .container {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            max-width: calc(100% - 250px);
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.green {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .stat-card.yellow {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .stat-card.red {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .evaluation-form {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .evaluation-form label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .rating-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .rating-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rating-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .rating-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .evaluation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .evaluation-item {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .evaluation-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .evaluation-score {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .evaluation-score.unrated {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .outlook-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .outlook-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .outlook-item:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .outlook-checkbox {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .outlook-text {
+            flex: 1;
+            color: #333;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .task-item.overdue {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .task-title.overdue {
+            color: #f44336;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .task-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .task-badge.completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .task-badge.in_progress {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .task-badge.pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .container {
+                margin-left: 200px;
+                max-width: calc(100% - 200px);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .evaluation-form {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar-header h2,
+            .sidebar-user,
+            .nav-item span {
+                display: none;
+            }
+
+            .container {
+                margin-left: 60px;
+                max-width: calc(100% - 60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- サイドバー -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <svg class="logo-image" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 外側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="95" fill="#1e3a5f"/>
+                    <!-- 白い縁 -->
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="white" stroke-width="3"/>
+                    <!-- 中間のターコイズブルーの円 -->
+                    <circle cx="100" cy="100" r="75" fill="#4db8a8"/>
+                    <!-- 内側の濃紺の円 -->
+                    <circle cx="100" cy="100" r="55" fill="#1e3a5f"/>
+                    <!-- 点線の円 -->
+                    <circle cx="100" cy="100" r="45" fill="none" stroke="white" stroke-width="2" stroke-dasharray="3,5"/>
+                    
+                    <!-- 軌道上の人のアイコン（8人） -->
+                    <!-- 上 -->
+                    <g transform="translate(100, 25)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右上 -->
+                    <g transform="translate(153, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右 -->
+                    <g transform="translate(175, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 右下 -->
+                    <g transform="translate(153, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 下 -->
+                    <g transform="translate(100, 175)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左下 -->
+                    <g transform="translate(47, 153)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左 -->
+                    <g transform="translate(25, 100)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    <!-- 左上 -->
+                    <g transform="translate(47, 47)">
+                        <circle cx="0" cy="0" r="8" fill="white"/>
+                        <circle cx="0" cy="-3" r="3" fill="white"/>
+                        <path d="M -3 3 L -3 8 M 3 3 L 3 8 M -3 8 L -5 13 M 3 8 L 5 13" stroke="#4db8a8" stroke-width="2" fill="none"/>
+                    </g>
+                    
+                    <!-- 中央のグラフアイコン -->
+                    <rect x="75" y="115" width="12" height="20" fill="white" rx="2"/>
+                    <rect x="94" y="105" width="12" height="30" fill="white" rx="2"/>
+                    <rect x="113" y="90" width="12" height="45" fill="white" rx="2"/>
+                    <!-- 上昇トレンドの矢印 -->
+                    <path d="M 70 95 L 100 80 L 130 70" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M 130 70 L 125 75 L 130 78 Z" fill="white"/>
+                </svg>
+                <div class="logo-text">ORBIT</div>
+            </div>
+            <div class="sidebar-user" id="sidebarUser">読み込み中...</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/index.html" class="nav-item active">
+                <span>トップページ</span>
+            </a>
+            <a href="/dashboard.html" class="nav-item">
+                <span>タスク管理</span>
+            </a>
+            <a href="/retrospective.html" class="nav-item">
+                <span>個人振り返り</span>
+            </a>
+            <a href="/feedback.html" class="nav-item">
+                <span>フィードバック</span>
+            </a>
+            <a href="/good-more-complete.html" class="nav-item">
+                <span>Good&More</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>トップページ</h1>
+        </div>
+
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- 達成率表示 -->
+        <div class="card">
+            <div class="card-title">タスク達成率</div>
+            <div class="stats-grid">
+                <div class="stat-card" id="personalTaskCard">
+                    <div class="stat-label">個人タスク達成率</div>
+                    <div class="stat-value" id="personalTaskRate">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="personalTaskProgress"></div>
+                    </div>
+                </div>
+                <div class="stat-card" id="teamTaskCard">
+                    <div class="stat-label">チームタスク達成率</div>
+                    <div class="stat-value" id="teamTaskRate">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="teamTaskProgress"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自分のタスク一覧 -->
+        <div class="card">
+            <div class="card-title">自分のタスク一覧</div>
+            <div class="task-list" id="taskList">
+                <div class="empty">読み込み中...</div>
+            </div>
+        </div>
+
+        <!-- チーム振り返り評価 -->
+        <div class="card">
+            <div class="card-title">チーム振り返り評価</div>
+            <div class="evaluation-form">
+                <label>今週の振り返りの質を評価してください（1〜5）：</label>
+                <div class="rating-input" id="ratingInput">
+                    <button class="rating-btn" onclick="selectRating(1)">1</button>
+                    <button class="rating-btn" onclick="selectRating(2)">2</button>
+                    <button class="rating-btn" onclick="selectRating(3)">3</button>
+                    <button class="rating-btn" onclick="selectRating(4)">4</button>
+                    <button class="rating-btn" onclick="selectRating(5)">5</button>
+                </div>
+                <button class="btn btn-primary" onclick="submitEvaluation()">送信</button>
+            </div>
+            <div style="margin-top: 20px;">
+                <strong>チームメンバーの評価</strong>
+                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                    平均: <span id="avgScore" style="font-size: 18px; font-weight: 600; color: #667eea;">-</span>
+                </div>
+                <div class="evaluation-list" id="evaluationList" style="margin-top: 15px;">
+                    <div class="empty">読み込み中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 今週の目標 -->
+        <div class="card">
+            <d class="card-title">今週の目標</d>
+            <div class="outlook-list" id="outlookList">
+                <div class="empty">読み込み中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let TEAM_ID = null;
+        let selectedRating = null;
+        let dashboardData = null;
+
+        // ページ読み込み時
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            if (currentUser) {
+                await loadDashboardData();
+            }
+        });
+
+        // 現在のユーザー取得
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/auth-api.php/me');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    currentUser = data.data;
+                    document.getElementById('sidebarUser').textContent = currentUser.name + ' (チーム' + currentUser.team_name + ')';
+                    
+                    const teamMap = {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8};
+                    TEAM_ID = teamMap[currentUser.team_name] || 1;
+                } else {
+                    window.location.href = '/auth.html';
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                window.location.href = '/auth.html';
+            }
+        }
+
+        // ダッシュボードデータ取得
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`/top-api.php/dashboard?user_id=${currentUser.id}&team_id=${TEAM_ID}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    dashboardData = data.data;
+                    renderDashboard();
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+
+            // タスク一覧取得
+            await loadTasks();
+        }
+
+        // タスク一覧取得
+        async function loadTasks() {
+            try {
+                const response = await fetch(`/dashboard-api.php/tasks?user_id=${currentUser.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderTasks(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to load tasks:', error);
+                document.getElementById('taskList').innerHTML = '<div class="empty">タスクの読み込みに失敗しました</div>';
+            }
+        }
+
+        // ダッシュボード表示
+        function renderDashboard() {
+            // 達成率表示
+            updateStatCard('personalTask', dashboardData.personal_task_rate);
+            updateStatCard('teamTask', dashboardData.team_task_rate);
+            
+            // 評価一覧
+            renderEvaluations();
+            
+            // 前週の展望
+            renderOutlook();
+        }
+
+        // 達成率カード更新
+        function updateStatCard(type, rate) {
+            const card = document.getElementById(type + 'Card');
+            const rateEl = document.getElementById(type + 'Rate');
+            const progressEl = document.getElementById(type + 'Progress');
+            
+            rateEl.textContent = rate + '%';
+            progressEl.style.width = rate + '%';
+            
+            // 色分け
+            card.className = 'stat-card';
+            if (rate >= 80) {
+                card.classList.add('green');
+            } else if (rate >= 50) {
+                card.classList.add('yellow');
+            } else {
+                card.classList.add('red');
+            }
+        }
+
+        // 評価選択
+        function selectRating(rating) {
+            selectedRating = rating;
+            document.querySelectorAll('.rating-btn').forEach((btn, index) => {
+                if (index < rating) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // 評価送信
+        async function submitEvaluation() {
+            if (!selectedRating) {
+                alert('評価を選択してください');
+                return;
+            }
+
+            try {
+                const response = await fetch('/top-api.php/team-evaluation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        team_id: TEAM_ID,
+                        evaluation_score: selectedRating
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 評価一覧表示
+        function renderEvaluations() {
+            const list = document.getElementById('evaluationList');
+            const evaluations = dashboardData.evaluations;
+            
+            if (evaluations.length === 0) {
+                list.innerHTML = '<div class="empty">評価がありません</div>';
+                return;
+            }
+
+            list.innerHTML = evaluations.map(ev => `
+                <div class="evaluation-item">
+                    <div class="evaluation-name">${escapeHtml(ev.name)}</div>
+                    <div class="evaluation-score ${ev.evaluation_score ? '' : 'unrated'}">
+                        ${ev.evaluation_score || '未評価'}
+                    </div>
+                </div>
+            `).join('');
+            
+            // 平均表示
+            document.getElementById('avgScore').textContent = dashboardData.average_score || '-';
+        }
+
+        // タスク一覧表示
+        function renderTasks(tasks) {
+            const list = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                list.innerHTML = '<div class="empty">タスクがありません</div>';
+                return;
+            }
+
+            list.innerHTML = tasks.map(task => {
+                const isOverdue = task.is_overdue;
+                const statusText = task.status === 'completed' ? '完了' : 
+                                 task.status === 'in_progress' ? '進行中' : '未着手';
+                
+                return `
+                    <div class="task-item ${isOverdue ? 'overdue' : ''}">
+                        <div class="task-content">
+                            <div class="task-title ${isOverdue ? 'overdue' : ''}">${escapeHtml(task.title)}</div>
+                            <div class="task-meta">
+                                <span>担当: ${escapeHtml(task.assigned_name || '未割当')}</span>
+                                <span>期日: ${task.due_date || '未設定'}</span>
+                                ${isOverdue ? '<span style="color: #f44336; font-weight: 600;">期限切れ</span>' : ''}
+                            </div>
+                        </div>
+                        <span class="task-badge ${task.status}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 今週の目標表示（個人振り返りの今後の展望）
+        async function renderOutlook() {
+            const list = document.getElementById('outlookList');
+            
+            try {
+                // 自分の最新の振り返りから今後の展望を取得
+                const response = await fetch(`/retrospective-api.php/retrospectives?user_id=${currentUser.id}`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    // 最新の振り返りを取得
+                    const latestRetrospective = data.data[0];
+                    
+                    if (latestRetrospective.future_outlook) {
+                        list.innerHTML = `
+                            <div class="outlook-item" style="cursor: default;">
+                                <span class="outlook-text">${escapeHtml(latestRetrospective.future_outlook)}</span>
+                            </div>
+                        `;
+                    } else {
+                        list.innerHTML = '<div class="empty">今週の目標が設定されていません</div>';
+                    }
+                } else {
+                    list.innerHTML = '<div class="empty">個人振り返りを記入してください</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load outlook:', error);
+                list.innerHTML = '<div class="empty">目標の読み込みに失敗しました</div>';
+            }
+        }
+
+        // 展望チェック切り替え
+        async function toggleOutlook(retrospectiveId, isCompleted) {
+            try {
+                const response = await fetch('/top-api.php/outlook-check', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        retrospective_id: retrospectiveId,
+                        is_completed: isCompleted
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccess(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 成功メッセージ表示
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
